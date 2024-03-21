@@ -8,6 +8,7 @@ import yaml
 from linkml_runtime.dumpers import json_dumper
 import rdflib
 import modo_schema.datamodel as model
+import s3fs
 import zarr
 
 from .introspection import get_haspart_property
@@ -60,16 +61,24 @@ class MODO:
     ):
         self.path = Path(path)
         if s3_endpoint:
-            self.archive = zarr.open_group(
-                f"s3://{path}/data.zarr",
-                storage_options={"anon": True, "endpoint_url": s3_endpoint},
-            )
+            fs = s3fs.S3FileSystem(endpoint_url=s3_endpoint, anon=True)
+            if fs.exists(str(self.path / "data.zarr")):
+                self.archive = zarr.open(
+                    f"s3://{path}/data.zarr",
+                    storage_options={
+                        "anon": True,
+                        "endpoint_url": s3_endpoint,
+                    },
+                )
+                return
+        else:
+            fs = None
         # Opening existing object
-        elif (self.path / "data.zarr").exists():
+        if (self.path / "data.zarr").exists():
             self.archive = zarr.open(str(self.path / "data.zarr"))
         # Creating from scratch
         else:
-            self.archive = init_zarr(self.path)
+            self.archive = init_zarr(self.path, fs)
             self.id = id or self.path.name
             fields = {
                 "@type": "MODO",
@@ -125,17 +134,28 @@ class MODO:
 
     def list_files(self) -> Generator[Path, None, None]:
         """Lists files in the archive recursively (except for the zarr file)."""
-        for path in self.path.glob("*"):
-            if path.name.endswith(".zarr"):
-                continue
-            elif path.is_file():
-                yield path
-            for file in path.rglob("*"):
-                yield file
+        if isinstance(self.archive.store, zarr.storage.FSStore):
+            fs = self.archive.store.fs
+            for path in fs.find(str(self.path)):
+                if Path(path).name.endswith(".zarr") or Path(
+                    path
+                ).name.startswith("."):
+                    continue
+                else:
+                    yield path
+        else:
+            for path in self.path.glob("*"):
+                if path.name.endswith(".zarr"):
+                    continue
+                elif path.is_file():
+                    yield path
+                for file in path.rglob("*"):
+                    yield file
 
     def list_arrays(self):
         """Lists arrays in the archive recursively."""
-        return self.archive.tree()
+        root = zarr.open_consolidated(self.archive.store)
+        return root.tree()
 
     def query(self, query: str):
         """Use SPARQL to query the metadata graph"""
@@ -170,6 +190,13 @@ class MODO:
             data_file = self.path / attrs["data_path"]
             if data_file.exists():
                 data_file.unlink()
+            elif isinstance(
+                self.archive.store, zarr.storage.FSStore
+            ) and self.archive.store.fs.exists(data_file):
+                self.archive.store.fs.rm(str(data_file))
+
+        # Remove element group
+        del self.archive[element_id]
 
         # Remove links from other elements
         for elem, attrs in self.metadata.items():
@@ -178,6 +205,7 @@ class MODO:
                     del self.archive[elem].attrs[key]
                 elif isinstance(value, list) and element_id in value:
                     self.archive[elem].attrs[key].remove(element_id)
+
         zarr.consolidate_metadata(self.archive.store)
 
     def add_element(
@@ -211,7 +239,14 @@ class MODO:
             )
 
         # Copy data file to archive and update data_path in metadata
-        copy_file_to_archive(data_file, self.path, element._get("data_path"))
+        fs = (
+            self.archive.store.fs
+            if isinstance(self.archive.store, zarr.storage.FSStore)
+            else None
+        )
+        copy_file_to_archive(
+            data_file, self.path, element._get("data_path"), fs
+        )
 
         # Inferred from type
         type_name = UserElementType.from_object(element).value
@@ -247,7 +282,14 @@ class MODO:
             )
 
         # Copy data file to archive and update data_path in metadata
-        copy_file_to_archive(data_file, self.path, element._get("data_path"))
+        fs = (
+            self.archive.store.fs
+            if isinstance(self.archive.store, zarr.storage.FSStore)
+            else None
+        )
+        copy_file_to_archive(
+            data_file, self.path, element._get("data_path"), fs
+        )
 
         # Inferred from type inferred from type
         type_name = ElementType.from_object(element).value
