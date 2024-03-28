@@ -186,24 +186,111 @@ def is_uri(text: str):
         return False
 
 
-def parse_region(region: str) -> tuple[str, int, int]:
+def parse_region(region: str) -> tuple[str, str, str]:
     """Parses an input UCSC-format region string into
     (chrom, start, end).
 
     Examples
     --------
     >>> parse_region('chr1:10-320')
-    ('chr1', 10, 320)
-    >>> parse_region('chr-1ba:32-0100')
-    ('chr-1ba', 32, 100)
+    ('chr1', '10', '320')
+    >>> parse_region('chr-1ba:32-100')
+    ('chr-1ba', '32', '100')
+    >>> parse_region('chr1:10')
+    ('chr1', '10', '')
+    >>> parse_region('chr1')
+    ('chr1', '', '')
+    >>> parse_region('*')
+    ('*', '', '')
     """
 
-    if not re.match(r"[^:]+:[0-9]+-[0-9]+", region):
+    matches = re.match(r"^([^:]+)(:([0-9]+)?(-[0-9]*)?)?$", region)
+    if matches == None:
         raise ValueError(
             f"Invalid region format: {region}. Expected chr:start-end"
         )
+    else:
+        chrom, _, start, end = matches.groups()
+        if start == None:
+            start = ""
+        if end == None:
+            end = ""
+        else:
+            end = end.replace("-", "")
 
-    chrom, coords = region.split(":")
-    start, end = coords.split("-")
+    return (chrom, start, end)
 
-    return (chrom, int(start), int(end))
+
+def filename_from_url(url: str) -> tuple[str, str]:
+    """Extract file_name and file_extension from a url
+
+    Examples
+    --------
+    >>> filename_from_url('NA12878.cram')
+    ('NA12878', 'cram')
+    """
+
+    file = url.split("/")[-1]
+    file_name, file_extension = file.split(".")
+
+    return (file_name, file_extension)
+
+
+def htsget_command(url: str, region: str = None, output: str = None) -> str:
+    """Takes a URL, a region, and an optional output file name
+    and returns an htsget valid command line request.
+
+    Examples
+    --------
+    >>> htsget_command("http://domain/reads/modo/filename.cram", "chr1:10000-10500", 'fileslice.cram')
+    'htsget http://domain/reads/modo/filename --reference-name=chr1 --start=10000 --end=10500 --format=CRAM -O fileslice.cram'
+    """
+
+    file_name, file_extension = filename_from_url(url)
+    if region is not None:
+        chrom, start, end = parse_region(region)
+    else:
+        chrom, start, end = "", "", ""
+
+    htsget_cl = f'htsget {url.split(f".{file_extension}")[0]}'
+
+    if chrom != "":
+        htsget_cl += f" --reference-name={chrom}"
+        if start != "":
+            htsget_cl += f" --start={start}"
+        if end != "":
+            htsget_cl += f" --end={end}"
+    htsget_cl += f" --format={file_extension.upper()}"
+    if output is not None:
+        htsget_cl += f" -O {output}"
+
+    return htsget_cl
+
+
+def htsget_url(url: str, region: str = None) -> str:
+    """Takes a URL and a region and returns an htsget URL for command line use.
+
+    Examples
+    --------
+    >>> htsget_url("http://domain/reads/modo/filename.cram", "chr1:10000-10500")
+    'http://domain/reads/modo/filename?referenceName=chr1&start=10000&end=10500&format=CRAM'
+    """
+
+    file_name, file_extension = filename_from_url(url)
+    if region is not None:
+        chrom, start, end = parse_region(region)
+    else:
+        chrom, start, end = "", "", ""
+
+    htsgetURL = url.split(f".{file_extension}")[0] + "?"
+
+    if chrom != "":
+        htsgetURL += f"referenceName={chrom}"
+        if start != "":
+            htsgetURL += f"&start={start}"
+        if end != "":
+            htsgetURL += f"&end={end}"
+        htsgetURL += "&"
+    htsgetURL += f"format={file_extension.upper()}"
+
+    return htsgetURL
