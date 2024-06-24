@@ -61,27 +61,28 @@ def slice_remote_genomics(
 ) -> Optional[Iterator[AlignedSegment | VariantRecord]]:
     """Stream or write to a local file a slice of a remote CRAM or VCF/BCF file"""
 
-    url = urlparse(url)
-    in_fileformat = GenomicFileSuffix.from_path(Path(url.path)).name
-    if in_fileformat not in ("CRAM", "VCF", "BCF") or url.path.endswith(
+    htsget_url = urlparse(url)
+    in_fileformat = GenomicFileSuffix.from_path(Path(htsget_url.path)).name
+    if in_fileformat not in ("CRAM", "VCF", "BCF") or htsget_url.path.endswith(
         ".vcf"
     ):
         raise ValueError(
             "Unsupported file type. Streaming/Saving remote genomic files support remote .cram, .vcf.gz, .bcf files."
         )
-    # path = url.path
-    url = url._replace(
-        path=re.sub("\.vcf\.\w+$", ".vcf", url.path)
+    htsget_url = htsget_url._replace(
+        path=re.sub(r"\.vcf\.\w+$", ".vcf", htsget_url.path)
     )  # remove aditional
     # extensions, e.g., .vcf.gz -> .vcf
-    url = url._replace(path=str(Path(url.path).with_suffix("")))
+    htsget_url = htsget_url._replace(
+        path=str(Path(htsget_url.path).with_suffix(""))
+    )
 
     reference_name, start, end = parse_region(region)
 
     htsget_response_buffer = BytesIO()
     htsget.get(
-        url=url.geturl(),
-        output=htsget_response_buffer,  # sys.stdout.buffer,
+        url=htsget_url.geturl(),
+        output=htsget_response_buffer,
         reference_name=reference_name,
         start=start,
         end=end,

@@ -21,6 +21,7 @@ from .storage import (
     S3Storage,
 )
 from .file_utils import extract_metadata, extraction_formats
+from .htsget import stream_htsget
 from .helpers import (
     class_from_name,
     dict_to_instance,
@@ -29,7 +30,7 @@ from .helpers import (
     UserElementType,
     GenomicFileSuffix,
 )
-from .cram import slice_genomics, slice_remote_genomics
+from .cram import slice_genomics
 
 
 class MODO:
@@ -387,6 +388,7 @@ class MODO:
                 + endpoint_type  # /reads/ or /variants/
                 + str(Path(*Path(file_path).parts[1:]))
             )
+            stream = stream_htsget(url, region, reference_filename)
 
             gen_iter = slice_remote_genomics(
                 url=url,
