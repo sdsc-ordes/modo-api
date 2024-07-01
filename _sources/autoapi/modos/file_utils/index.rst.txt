@@ -1,0 +1,46 @@
+modos.file_utils
+================
+
+.. py:module:: modos.file_utils
+
+.. autoapi-nested-parse::
+
+   Utilities to manage data files associated with model instances
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   modos.file_utils.extraction_formats
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   modos.file_utils.extract_cram_metadata
+   modos.file_utils.extract_metadata
+
+
+Module Contents
+---------------
+
+.. py:function:: extract_cram_metadata(cram)
+
+   Extract metadata from the CRAM file header and
+   convert specific attributes according to the modo schema.
+
+
+.. py:data:: extraction_formats
+   :value: ['CRAM']
+
+
+.. py:function:: extract_metadata(instance, base_path)
+
+   Extract metadata from files associated to a model instance
+
+

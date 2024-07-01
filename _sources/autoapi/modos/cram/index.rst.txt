@@ -1,0 +1,158 @@
+modos.cram
+==========
+
+.. py:module:: modos.cram
+
+.. autoapi-nested-parse::
+
+   Utilities to interact with genomic intervals in CRAM files.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   modos.cram.GenomicFileSuffix
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   modos.cram.parse_region
+   modos.cram.file_to_pysam_object
+   modos.cram.bytesio_to_iterator
+   modos.cram.iter_to_file
+   modos.cram.slice_genomics
+   modos.cram.slice_remote_genomics
+   modos.cram.extract_cram_metadata
+   modos.cram.validate_cram_files
+   modos.cram.create_sequence_id
+
+
+Module Contents
+---------------
+
+.. py:function:: parse_region(region = None)
+
+   Parses an input UCSC-format region string into
+   (reference_name, start, end).
+
+   .. rubric:: Examples
+
+   >>> parse_region('chr1:10-320')
+   ('chr1', 10, 320)
+   >>> parse_region('chr-1ba:10-320')
+   ('chr-1ba', 10, 320)
+   >>> parse_region('chr1:-320')
+   ('chr1', None, 320)
+   >>> parse_region('chr1:10-')
+   ('chr1', 10, None)
+   >>> parse_region('chr1:10')
+   ('chr1', 10, None)
+   >>> parse_region('chr1')
+   ('chr1', None, None)
+   >>> parse_region('*')
+   ('*', None, None)
+   >>> parse_region('')
+   (None, None, None)
+
+
+.. py:class:: GenomicFileSuffix
+
+   Bases: :py:obj:`tuple`, :py:obj:`enum.Enum`
+
+
+   Enumeration of all supported genomic file suffixes.
+
+
+   .. py:attribute:: CRAM
+      :value: ('.cram',)
+
+
+
+   .. py:attribute:: FASTA
+      :value: ('.fasta', '.fa')
+
+
+
+   .. py:attribute:: FASTQ
+      :value: ('.fastq', '.fq')
+
+
+
+   .. py:attribute:: BAM
+      :value: ('.bam',)
+
+
+
+   .. py:attribute:: SAM
+      :value: ('.sam',)
+
+
+
+   .. py:attribute:: VCF
+      :value: ('.vcf', '.vcf.gz')
+
+
+
+   .. py:attribute:: BCF
+      :value: ('.bcf',)
+
+
+
+   .. py:method:: from_path(path)
+      :classmethod:
+
+
+
+   .. py:method:: get_index_suffix()
+
+      Return the supported index suffix related to a genomic filetype
+
+
+
+.. py:function:: file_to_pysam_object(path, fileformat, reference_filename = None)
+
+   Create a pysam AlignmentFile of VariantFile
+
+
+.. py:function:: bytesio_to_iterator(bytesio_buffer, file_format, region, reference_filename = None)
+
+   Takes a BytesIO buffer and returns a pysam
+   AlignedSegment or VariantRecord iterator
+
+
+.. py:function:: iter_to_file(gen_iter, infile, output_filename, reference_filename = None)
+
+.. py:function:: slice_genomics(path, region = None, reference_filename = None, output_filename = None)
+
+   Returns an iterable slice of the CRAM, VCF or BCF file,
+   or saves it to a local file.
+
+
+.. py:function:: slice_remote_genomics(url, region = None, reference_filename = None, output_filename = None)
+
+   Stream or write to a local file a slice of a remote CRAM or VCF/BCF file
+
+
+.. py:function:: extract_cram_metadata(cram)
+
+   Extract metadata from the CRAM file header and
+   convert specific attributes according to the modo schema.
+
+
+.. py:function:: validate_cram_files(cram_path)
+
+   Validate CRAM files using pysam.
+   Checks if the file is sorted and has an index.
+
+
+.. py:function:: create_sequence_id(name, sequence_md5)
+
+   Helper function to create a unique id from a sequence name and md5 hash
+
+

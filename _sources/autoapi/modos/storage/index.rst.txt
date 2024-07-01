@@ -1,0 +1,279 @@
+modos.storage
+=============
+
+.. py:module:: modos.storage
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   modos.storage.ZARR_ROOT
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   modos.storage.ElementType
+   modos.storage.GenomicFileSuffix
+   modos.storage.Storage
+   modos.storage.LocalStorage
+   modos.storage.S3Storage
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   modos.storage.init_zarr
+   modos.storage.add_metadata_group
+   modos.storage.add_data
+   modos.storage.list_zarr_items
+
+
+Module Contents
+---------------
+
+.. py:class:: ElementType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Enumeration of all element types.
+
+
+   .. py:attribute:: SAMPLE
+      :value: 'sample'
+
+
+
+   .. py:attribute:: ASSAY
+      :value: 'assay'
+
+
+
+   .. py:attribute:: DATA_ENTITY
+      :value: 'data'
+
+
+
+   .. py:attribute:: REFERENCE_GENOME
+      :value: 'reference'
+
+
+
+   .. py:attribute:: REFERENCE_SEQUENCE
+      :value: 'sequence'
+
+
+
+   .. py:method:: get_target_class()
+
+      Return the target class for the element type.
+
+
+
+   .. py:method:: from_object(obj)
+      :classmethod:
+
+
+      Return the element type from an object.
+
+
+
+   .. py:method:: from_model_name(name)
+      :classmethod:
+
+
+      Return the element type from an object name.
+
+
+
+.. py:class:: GenomicFileSuffix
+
+   Bases: :py:obj:`tuple`, :py:obj:`enum.Enum`
+
+
+   Enumeration of all supported genomic file suffixes.
+
+
+   .. py:attribute:: CRAM
+      :value: ('.cram',)
+
+
+
+   .. py:attribute:: FASTA
+      :value: ('.fasta', '.fa')
+
+
+
+   .. py:attribute:: FASTQ
+      :value: ('.fastq', '.fq')
+
+
+
+   .. py:attribute:: BAM
+      :value: ('.bam',)
+
+
+
+   .. py:attribute:: SAM
+      :value: ('.sam',)
+
+
+
+   .. py:attribute:: VCF
+      :value: ('.vcf', '.vcf.gz')
+
+
+
+   .. py:attribute:: BCF
+      :value: ('.bcf',)
+
+
+
+   .. py:method:: from_path(path)
+      :classmethod:
+
+
+
+   .. py:method:: get_index_suffix()
+
+      Return the supported index suffix related to a genomic filetype
+
+
+
+.. py:data:: ZARR_ROOT
+
+.. py:class:: Storage
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+   .. py:property:: path
+      :type: pathlib.Path
+
+      :abstractmethod:
+
+
+
+   .. py:property:: zarr
+      :type: zarr.hierarchy.Group
+
+      :abstractmethod:
+
+
+
+   .. py:method:: exists(target)
+      :abstractmethod:
+
+
+
+   .. py:method:: put(source, target)
+      :abstractmethod:
+
+
+
+   .. py:method:: remove(target)
+      :abstractmethod:
+
+
+
+   .. py:method:: list(target)
+      :abstractmethod:
+
+
+
+   .. py:method:: empty()
+
+
+.. py:class:: LocalStorage(path)
+
+   Bases: :py:obj:`Storage`
+
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+   .. py:property:: zarr
+      :type: zarr.hierarchy.Group
+
+
+
+   .. py:property:: path
+      :type: pathlib.Path
+
+
+
+   .. py:method:: exists(target)
+
+
+   .. py:method:: list(target = None)
+
+
+   .. py:method:: remove(target)
+
+
+   .. py:method:: put(source, target)
+
+
+.. py:class:: S3Storage(path, s3_endpoint, s3_kwargs)
+
+   Bases: :py:obj:`Storage`
+
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+   .. py:property:: path
+      :type: pathlib.Path
+
+
+
+   .. py:property:: zarr
+      :type: zarr.hierarchy.Group
+
+
+
+   .. py:method:: exists(target = ZARR_ROOT)
+
+
+   .. py:method:: list(target = None)
+
+
+   .. py:method:: remove(target)
+
+
+   .. py:method:: put(source, target)
+
+
+.. py:function:: init_zarr(zarr_store)
+
+   Initialize object's directory and metadata structure.
+
+
+.. py:function:: add_metadata_group(parent_group, metadata)
+
+   Add input metadata dictionary to an existing zarr group.
+
+
+.. py:function:: add_data(group, data)
+
+   Add a numpy array to an existing zarr group.
+
+
+.. py:function:: list_zarr_items(group)
+
+   Recursively list all zarr groups and arrays
+
+

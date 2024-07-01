@@ -1,0 +1,42 @@
+modos.remote
+============
+
+.. py:module:: modos.remote
+
+.. autoapi-nested-parse::
+
+   Functions related to server storage handling
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   modos.remote.list_remote_items
+   modos.remote.get_metadata_from_remote
+   modos.remote.get_s3_path
+
+
+Module Contents
+---------------
+
+.. py:function:: list_remote_items(remote_url)
+
+.. py:function:: get_metadata_from_remote(remote_url, modo_id = None)
+
+   Function to access metadata from one specific or all modos on a remote server
+
+   :param server_url: Url to the remote modo server
+   :param id: id of the modo to retrieve metadata from. Will return all if not specified (default).
+
+
+.. py:function:: get_s3_path(remote_url, query, exact_match = False)
+
+   Request public S3 path of a specific modo or all modos matching the query string
+   :param remote_url: Url to the remote modo server
+   :param query: query string to specify the modo of interest
+   :param exact_match: if True only modos with exactly that id will be returned, otherwise (default) all matching modos
+
+

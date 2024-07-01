@@ -1,0 +1,78 @@
+modos.introspection
+===================
+
+.. py:module:: modos.introspection
+
+.. autoapi-nested-parse::
+
+   Introspection utilities for the MODO schema.
+
+   This module provides utilities for accessing the schema structure
+   and for converting instances to different representations.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   modos.introspection.SCHEMA_PATH
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   modos.introspection.load_schema
+   modos.introspection.load_prefixmap
+   modos.introspection.get_slots
+   modos.introspection.instance_to_graph
+   modos.introspection.get_slot_range
+   modos.introspection.get_enum_values
+   modos.introspection.get_haspart_property
+
+
+Module Contents
+---------------
+
+.. py:data:: SCHEMA_PATH
+
+.. py:function:: load_schema()
+
+   Return a view over the schema structure.
+
+
+.. py:function:: load_prefixmap()
+
+   Load the prefixmap.
+
+
+.. py:function:: get_slots(target_class, required_only=False)
+
+   Return a list of required slots for a class.
+
+
+.. py:function:: instance_to_graph(instance)
+
+.. py:function:: get_slot_range(slot_name)
+
+   Return the class-independent range of a slot.
+
+
+.. py:function:: get_enum_values(enum_name)
+
+.. py:function:: get_haspart_property(child_class)
+
+   Return the name of the "has_part" property for a target class.
+   If no such property is in the schema, return None.
+
+   .. rubric:: Examples
+
+   >>> get_haspart_property('AlignmentSet')
+   'has_data'
+   >>> get_haspart_property('Assay')
+   'has_assay'
+
+

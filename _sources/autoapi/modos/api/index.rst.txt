@@ -1,0 +1,438 @@
+modos.api
+=========
+
+.. py:module:: modos.api
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   modos.api.extraction_formats
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   modos.api.LocalStorage
+   modos.api.S3Storage
+   modos.api.ElementType
+   modos.api.GenomicFileSuffix
+   modos.api.UserElementType
+   modos.api.MODO
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   modos.api.attrs_to_graph
+   modos.api.add_metadata_group
+   modos.api.list_zarr_items
+   modos.api.extract_metadata
+   modos.api.class_from_name
+   modos.api.dict_to_instance
+   modos.api.set_haspart_relationship
+   modos.api.update_haspart_id
+   modos.api.slice_genomics
+   modos.api.slice_remote_genomics
+
+
+Module Contents
+---------------
+
+.. py:function:: attrs_to_graph(meta, uri_prefix)
+
+   Convert a attribute dictionary to an RDF graph of metadata.
+
+
+.. py:function:: add_metadata_group(parent_group, metadata)
+
+   Add input metadata dictionary to an existing zarr group.
+
+
+.. py:function:: list_zarr_items(group)
+
+   Recursively list all zarr groups and arrays
+
+
+.. py:class:: LocalStorage(path)
+
+   Bases: :py:obj:`Storage`
+
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+   .. py:property:: zarr
+      :type: zarr.hierarchy.Group
+
+
+
+   .. py:property:: path
+      :type: pathlib.Path
+
+
+
+   .. py:method:: exists(target)
+
+
+   .. py:method:: list(target = None)
+
+
+   .. py:method:: remove(target)
+
+
+   .. py:method:: put(source, target)
+
+
+.. py:class:: S3Storage(path, s3_endpoint, s3_kwargs)
+
+   Bases: :py:obj:`Storage`
+
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+   .. py:property:: path
+      :type: pathlib.Path
+
+
+
+   .. py:property:: zarr
+      :type: zarr.hierarchy.Group
+
+
+
+   .. py:method:: exists(target = ZARR_ROOT)
+
+
+   .. py:method:: list(target = None)
+
+
+   .. py:method:: remove(target)
+
+
+   .. py:method:: put(source, target)
+
+
+.. py:function:: extract_metadata(instance, base_path)
+
+   Extract metadata from files associated to a model instance
+
+
+.. py:data:: extraction_formats
+   :value: ['CRAM']
+
+
+.. py:function:: class_from_name(name)
+
+.. py:function:: dict_to_instance(element)
+
+.. py:class:: ElementType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Enumeration of all element types.
+
+
+   .. py:attribute:: SAMPLE
+      :value: 'sample'
+
+
+
+   .. py:attribute:: ASSAY
+      :value: 'assay'
+
+
+
+   .. py:attribute:: DATA_ENTITY
+      :value: 'data'
+
+
+
+   .. py:attribute:: REFERENCE_GENOME
+      :value: 'reference'
+
+
+
+   .. py:attribute:: REFERENCE_SEQUENCE
+      :value: 'sequence'
+
+
+
+   .. py:method:: get_target_class()
+
+      Return the target class for the element type.
+
+
+
+   .. py:method:: from_object(obj)
+      :classmethod:
+
+
+      Return the element type from an object.
+
+
+
+   .. py:method:: from_model_name(name)
+      :classmethod:
+
+
+      Return the element type from an object name.
+
+
+
+.. py:class:: GenomicFileSuffix
+
+   Bases: :py:obj:`tuple`, :py:obj:`enum.Enum`
+
+
+   Enumeration of all supported genomic file suffixes.
+
+
+   .. py:attribute:: CRAM
+      :value: ('.cram',)
+
+
+
+   .. py:attribute:: FASTA
+      :value: ('.fasta', '.fa')
+
+
+
+   .. py:attribute:: FASTQ
+      :value: ('.fastq', '.fq')
+
+
+
+   .. py:attribute:: BAM
+      :value: ('.bam',)
+
+
+
+   .. py:attribute:: SAM
+      :value: ('.sam',)
+
+
+
+   .. py:attribute:: VCF
+      :value: ('.vcf', '.vcf.gz')
+
+
+
+   .. py:attribute:: BCF
+      :value: ('.bcf',)
+
+
+
+   .. py:method:: from_path(path)
+      :classmethod:
+
+
+
+   .. py:method:: get_index_suffix()
+
+      Return the supported index suffix related to a genomic filetype
+
+
+
+.. py:function:: set_haspart_relationship(child_class, child_path, parent_group)
+
+   Add element to the hasPart attribute of a parent zarr group
+
+
+.. py:class:: UserElementType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Enumeration of element types exposed to the user.
+
+
+   .. py:attribute:: SAMPLE
+      :value: 'sample'
+
+
+
+   .. py:attribute:: ASSAY
+      :value: 'assay'
+
+
+
+   .. py:attribute:: DATA_ENTITY
+      :value: 'data'
+
+
+
+   .. py:attribute:: REFERENCE_GENOME
+      :value: 'reference'
+
+
+
+   .. py:method:: get_target_class()
+
+      Return the target class for the element type.
+
+
+
+   .. py:method:: from_object(obj)
+      :classmethod:
+
+
+      Return the element type from an object.
+
+
+
+.. py:function:: update_haspart_id(element)
+
+   update the id of the has_part property of an element to use the full id including its type
+
+
+.. py:function:: slice_genomics(path, region = None, reference_filename = None, output_filename = None)
+
+   Returns an iterable slice of the CRAM, VCF or BCF file,
+   or saves it to a local file.
+
+
+.. py:function:: slice_remote_genomics(url, region = None, reference_filename = None, output_filename = None)
+
+   Stream or write to a local file a slice of a remote CRAM or VCF/BCF file
+
+
+.. py:class:: MODO(path, s3_endpoint = None, s3_kwargs = None, htsget_endpoint = None, id = None, name = None, description = None, creation_date = date.today(), last_update_date = date.today(), has_assay = [], source_uri = None)
+
+   Multi-Omics Digital Object
+   A digital archive containing several multi-omics data and records.
+   The archive contains:
+   * A zarr file, array-based data and metadata pointing to arrays and data files
+   * CRAM files, with genomic-alignments data
+
+   .. rubric:: Examples
+
+   >>> demo = MODO("data/ex")
+
+   # List identifiers of samples in the archive
+   >>> demo.list_samples()
+   ['sample/sample1']
+
+   # List files in the archive
+   >>> files = sorted(demo.list_files())
+   >>> assert Path('data/ex/demo1.cram') in files
+   >>> assert Path('data/ex/reference1.fa') in files
+
+
+   .. py:property:: zarr
+      :type: zarr.hierarchy.Group
+
+
+
+   .. py:property:: path
+      :type: pathlib.Path
+
+
+
+   .. py:property:: metadata
+      :type: dict
+
+
+
+   .. py:method:: knowledge_graph(uri_prefix = None)
+
+      Return an RDF graph of the metadata. All identifiers
+      are converted to valid URIs if needed.
+
+
+
+   .. py:method:: show_contents()
+
+      human-readable print of the object's contents
+
+
+
+   .. py:method:: list_files()
+
+      Lists files in the archive recursively (except for the zarr file).
+
+
+
+   .. py:method:: list_arrays()
+
+      Lists arrays in the archive recursively.
+
+
+
+   .. py:method:: query(query)
+
+      Use SPARQL to query the metadata graph
+
+
+
+   .. py:method:: list_samples()
+
+      Lists samples in the archive.
+
+
+
+   .. py:method:: update_date(date = date.today())
+
+      update last_update_date attribute
+
+
+
+   .. py:method:: remove_element(element_id)
+
+      Remove an element from the archive, along with any files
+      directly attached to it and links from other elements to it.
+
+
+
+   .. py:method:: add_element(element, data_file = None, part_of = None)
+
+      Add an element to the archive.
+      If a data file is provided, it will be added to the archive.
+      If the element is part of another element, the parent metadata
+      will be updated.
+
+      :param element: Element to add to the archive.
+      :param data_file: File to associate with the element.
+      :param part_of: Id of the parent element. It must be scoped to the type.
+                      For example "sample/foo".
+
+
+
+   .. py:method:: _add_any_element(element, data_file = None, part_of = None)
+
+      Add an element of any type to the storage.
+
+
+
+   .. py:method:: update_element(element_id, new)
+
+      Update element metadata in place by adding new values from model object.
+
+      :param element_id: Full id path in the zarr store.
+      :param new: Element containing the enriched metadata.
+
+
+
+   .. py:method:: enrich_metadata()
+
+      Add metadata and corresponding elements extracted from object associated data to the MODO object
+
+
+
+   .. py:method:: stream_genomics(file_path, region = None, reference_filename = None, output_filename = None)
+
+      Slices both local and remote CRAM, VCF (.vcf.gz), and BCF
+      files returning an iterator or saving to local file.
+
+
+
